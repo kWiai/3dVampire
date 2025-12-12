@@ -1,4 +1,4 @@
-#pragma comment(lib, "d3d10.lib")
+﻿#pragma comment(lib, "d3d10.lib")
 #pragma comment(lib, "d3d11.lib")
 #pragma comment(lib, "d3dcompiler.lib")
 #pragma comment(lib, "dxguid.lib")
@@ -10,6 +10,7 @@
 #include "DirectXMath.h"
 #include <DirectXPackedVector.h>
 #include <debugapi.h>
+#include "global.h"
 
 using namespace DirectX;
 
@@ -409,25 +410,25 @@ namespace Shaders {
 		return shaderPathW;
 	}
 
-	void Log(const char* message)
+	/*void Log(const char message)
 	{
 		OutputDebugString(message);
-	}
+	}*/
 
 	void CompilerLog(LPCWSTR source, HRESULT hr, const char* message)
 	{
 		if (FAILED(hr))
 		{
-			Log((char*)pErrorBlob->GetBufferPointer());
+			//Log((char*)pErrorBlob->GetBufferPointer());
 		}
 		else
 		{
-			char shaderName[1024];
-			WideCharToMultiByte(CP_ACP, NULL, source, -1, shaderName, sizeof(shaderName), NULL, NULL);
-
-			Log(message);
-			Log((char*)shaderName);
-			Log("\n");
+			//char shaderName[1024];
+			//WideCharToMultiByte(CP_ACP, NULL, source, -1, shaderName, sizeof(shaderName), NULL, NULL);
+			//
+			//Log(message);
+			//Log((char*)shaderName);
+			//Log("\n");
 		}
 	}
 
@@ -548,7 +549,7 @@ namespace ConstBuf
 {
 	ID3D11Buffer* buffer[6];
 
-#define constCount 32
+#define constCount 4096
 
 	//b0 - use "params" label in shader
 	float drawerV[constCount];//update per draw call
@@ -918,7 +919,7 @@ namespace Camera
 		float t = timer::frameBeginTime*.001;
 		float angle = 100;
 		float a = 3.5;
-		XMVECTOR Eye = XMVectorSet(sin(t)*a, 0, cos(t)*a, 0.0f);
+		XMVECTOR Eye = XMVectorSet(camX, camY, camZ, 0.0f);
 		XMVECTOR At = XMVectorSet(0, 0, 0, 0.0f);
 		XMVECTOR Up = XMVectorSet(0, 1, 0, 0.0f);
 
@@ -940,17 +941,21 @@ void mainLoop()
 	Blend::Blending(Blend::blendmode::alpha, Blend::blendop::add);
 
 	Textures::RenderTarget(0, 0);
-	Draw::Clear({ 0,0,1,0 });
+	Draw::Clear({ 0,0,0 ,0 });
 	Draw::ClearDepth();
 	Depth::Depth(Depth::depthmode::on);
 	Rasterizer::Cull(Rasterizer::cullmode::off);
+
+	float mapSize = 24.0f;
+	//ConstBuf::global[0] = XMFLOAT4{ mapSize,0.0f,0.0f,0.0f };
+	//ConstBuf::Update(5, ConstBuf::global);
+
 	Shaders::vShader(0);
 	Shaders::pShader(0);
 	ConstBuf::ConstToVertex(4);
 	ConstBuf::ConstToPixel(4);
 
 	Camera::Camera();
-
 	Draw::NullDrawer(1, 1);
 	Draw::Present();
 }

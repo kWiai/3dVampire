@@ -7,6 +7,7 @@
 HWND hWnd;
 
 #include "dx11.h"
+#include "global.h"
 
 #define MAX_LOADSTRING 100
 
@@ -175,6 +176,40 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     case WM_DESTROY:
         PostQuitMessage(0);
         break;
+    case WM_KEYDOWN:
+        //W
+        if (GetAsyncKeyState(0x57) & 0x8000) {
+            camZ += 0.03f;
+            
+        }
+        //A
+        if (GetAsyncKeyState(0x41) & 0x8000) {
+            camX -= 0.03f;
+           
+        }
+        
+        //S
+        if (GetAsyncKeyState(0x53) & 0x8000) {
+            camZ -= 0.03f;
+            
+        }
+            
+        //D
+        if (GetAsyncKeyState(0x44) & 0x8000) {
+            camX += 0.03f;
+            
+        }
+
+        if (GetAsyncKeyState(VK_SPACE) & 0x8000) {
+            camY += 0.03f;
+            
+        }
+        if (GetAsyncKeyState(VK_CONTROL) & 0x8000) {
+            camY -= 0.03f;
+            
+        }
+       
+            
     default:
         return DefWindowProc(hWnd, message, wParam, lParam);
     }
