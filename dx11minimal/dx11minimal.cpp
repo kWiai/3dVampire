@@ -177,37 +177,57 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         PostQuitMessage(0);
         break;
     case WM_KEYDOWN:
-        //W
-        if (GetAsyncKeyState(0x57) & 0x8000) {
-            camZ += 0.03f;
-            
+    {
+        // Вычисляем базовые векторы
+        XMVECTOR forward = XMVectorSet(sin(camYaw), 0, cos(camYaw), 0);
+        XMVECTOR right = XMVectorSet(cos(camYaw), 0, -sin(camYaw), 0);
+        XMVECTOR up = XMVectorSet(0, 1, 0, 0);
+
+        // W - Вперёд (относительно направления взгляда)
+        if (GetAsyncKeyState(0x57) & 0x8000) {  // W
+            camX += XMVectorGetX(forward) * camSpeed;
+            camZ += XMVectorGetZ(forward) * camSpeed;
         }
-        //A
-        if (GetAsyncKeyState(0x41) & 0x8000) {
-            camX -= 0.03f;
-           
+
+        // S - Назад
+        if (GetAsyncKeyState(0x53) & 0x8000) {  // S
+            camX -= XMVectorGetX(forward) * camSpeed;
+            camZ -= XMVectorGetZ(forward) * camSpeed;
         }
-        
-        //S
-        if (GetAsyncKeyState(0x53) & 0x8000) {
-            camZ -= 0.03f;
-            
-        }
-            
-        //D
-        if (GetAsyncKeyState(0x44) & 0x8000) {
-            camX += 0.03f;
+
+        // A - Влево (strafe left)
+        if (GetAsyncKeyState(0x41) & 0x8000) {  // A
+            camX -= XMVectorGetX(right) * camSpeed;
+            camZ -= XMVectorGetZ(right) * camSpeed;
             
         }
 
+        // D - Вправо (strafe right)
+        if (GetAsyncKeyState(0x44) & 0x8000) {  // D
+            camX += XMVectorGetX(right) * camSpeed;
+            camZ += XMVectorGetZ(right) * camSpeed;
+        }
+
+        // Space - Вверх (по мировой оси Y)
         if (GetAsyncKeyState(VK_SPACE) & 0x8000) {
-            camY += 0.03f;
-            
+            camY += camSpeed;
         }
+
+        // Ctrl - Вниз
         if (GetAsyncKeyState(VK_CONTROL) & 0x8000) {
-            camY -= 0.03f;
-            
+            camY -= camSpeed;
         }
+
+        // Q/E - Вращение камеры (альтернатива мышке)
+        if (GetAsyncKeyState(0x51) & 0x8000) {  // Q
+            camYaw -= camSpeed * 0.5f;
+        }
+        if (GetAsyncKeyState(0x45) & 0x8000) {  // E
+            camYaw += camSpeed * 0.5f;
+        }
+
+        break;
+    }
        
             
     default:

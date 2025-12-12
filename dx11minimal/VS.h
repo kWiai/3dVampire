@@ -1,6 +1,6 @@
 cbuffer global : register(b5)
 {
-    float4 gConst[32];
+    float4 gConst[4096];
 };
 
 cbuffer frame : register(b4)
@@ -46,16 +46,37 @@ float3 rotY(float3 pos, float a)
 VS_OUTPUT VS(uint vID : SV_VertexID)
 {
     VS_OUTPUT output = (VS_OUTPUT)0;
-    float2 quad[6] = { -1, -1,
-                        1,  -1,
-                        -1, 1,
-                        1, -1,
-                        1,  1,
-                        -1, 1 };
 
-    float2 p = quad[vID];
-    float4 pos = float4(quad[vID], 0, 1);
+    // Параметры сетки
+    float gridSize = gConst[0].x;        // Размер сетки (например, 10x10)
+    float spacing = gConst[0].y;         // Расстояние между квадратами
+    float height = gConst[0].z;          // Высота (Y координата)
+
+    // 1. Определяем квадрат и вершину
+    int quadIndex = vID / 6;
+    int vertexInQuad = vID % 6;
+
+    // 2. Базовые вершины квадрата в 3D (XZ плоскость, Y=0)
+    float3 baseVerts[6] = {
+        float3(0, 0, 0), float3(1, 0, 0), float3(0, 0, 1),  // Треугольник 1
+        float3(1, 0, 0), float3(1, 0, 1), float3(0, 0, 1)   // Треугольник 2
+    };
+
+    float3 localPos = baseVerts[vertexInQuad];
+
+    // 3. Позиция в сетке
+    int gridX = quadIndex % (int)gridSize;
+    int gridZ = quadIndex / (int)gridSize;
+
+    // 4. Мировые координаты в 3D
+    float worldX = (gridX + localPos.x) * spacing - (gridSize * spacing) / 2.0f;
+    float worldY = height;                                    // Y координата
+    float worldZ = (gridZ + localPos.z) * spacing - (gridSize * spacing) / 2.0f;
+
+    float4 pos = float4(worldX, worldY, worldZ, 1.0f);
+
     output.pos = mul(pos, mul(view[0], proj[0]));
-    output.uv = float2(1, -1) * p / 2. + .5;
+    output.uv = float2(localPos.x, localPos.z);  // UV по X и Z
+
     return output;
 }

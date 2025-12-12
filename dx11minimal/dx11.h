@@ -913,19 +913,45 @@ float DegreesToRadians(float degrees)
 
 namespace Camera
 {
-
 	void Camera()
 	{
-		float t = timer::frameBeginTime*.001;
-		float angle = 100;
-		float a = 3.5;
-		XMVECTOR Eye = XMVectorSet(camX, camY, camZ, 0.0f);
-		XMVECTOR At = XMVectorSet(0, 0, 0, 0.0f);
-		XMVECTOR Up = XMVectorSet(0, 1, 0, 0.0f);
+		// 1. Ограничиваем pitch (чтобы не перевернуться)
+		camPitch = max(-XM_PIDIV2 + 0.001f, min(XM_PIDIV2 - 0.001f, camPitch));
+		float fixedPitch = camPitch - XM_PIDIV4;  // -45° (вниз)
+		// 2. Вычисляем направление взгляда на основе yaw и pitch
+		XMVECTOR direction = XMVectorSet(
+			cos(fixedPitch) * sin(camYaw),
+			sin(fixedPitch),
+			cos(fixedPitch) * cos(camYaw),
+			0.0f
+		);
 
+		// 3. Правый вектор (right vector)
+		XMVECTOR right = XMVectorSet(
+			sin(camYaw - XM_PIDIV2),
+			0,
+			cos(camYaw - XM_PIDIV2),
+			0.0f
+		);
+
+		// 4. Вектор "вверх" (up vector) - перпендикулярно direction и right
+		XMVECTOR up = XMVector3Cross(right, direction);
+
+		// 5. Позиция камеры и точка, куда она смотрит
+		XMVECTOR eye = XMVectorSet(camX, camY, camZ, 0.0f);
+		XMVECTOR target = XMVectorAdd(eye, direction);  // Смотрим в направлении взгляда
+
+		// 6. Создаём матрицы
 		ConstBuf::camera.world[0] = XMMatrixIdentity();
-		ConstBuf::camera.view[0] = XMMatrixTranspose(XMMatrixLookAtLH(Eye, At, Up));
-		ConstBuf::camera.proj[0] = XMMatrixTranspose(XMMatrixPerspectiveFovLH(DegreesToRadians(angle), iaspect, 0.01f, 100.0f));
+		ConstBuf::camera.view[0] = XMMatrixTranspose(
+			XMMatrixLookAtLH(eye, target, up)
+		);
+
+		// 7. Проекция (рекомендую уменьшить FOV для более естественного вида)
+		float angle = 60.0f;  // Вместо 100 градусов
+		ConstBuf::camera.proj[0] = XMMatrixTranspose(
+			XMMatrixPerspectiveFovLH(DegreesToRadians(angle), iaspect, 0.1f, 1000.0f)
+		);
 
 		ConstBuf::UpdateCamera();
 		ConstBuf::ConstToVertex(3);
@@ -941,14 +967,15 @@ void mainLoop()
 	Blend::Blending(Blend::blendmode::alpha, Blend::blendop::add);
 
 	Textures::RenderTarget(0, 0);
-	Draw::Clear({ 0,0,0 ,0 });
+	Draw::Clear({ 0.53,0.8,0.92 ,0 });
 	Draw::ClearDepth();
 	Depth::Depth(Depth::depthmode::on);
 	Rasterizer::Cull(Rasterizer::cullmode::off);
 
-	float mapSize = 24.0f;
-	//ConstBuf::global[0] = XMFLOAT4{ mapSize,0.0f,0.0f,0.0f };
-	//ConstBuf::Update(5, ConstBuf::global);
+	
+	ConstBuf::global[0] = XMFLOAT4{ mapSize,5.0f,0.0f,0.0f };
+	ConstBuf::Update(5, ConstBuf::global);
+	ConstBuf::ConstToVertex(5);
 
 	Shaders::vShader(0);
 	Shaders::pShader(0);
@@ -956,6 +983,6 @@ void mainLoop()
 	ConstBuf::ConstToPixel(4);
 
 	Camera::Camera();
-	Draw::NullDrawer(1, 1);
+	Draw::NullDrawer((int)mapSize*mapSize, 1);
 	Draw::Present();
 }

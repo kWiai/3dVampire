@@ -50,6 +50,6 @@ float4 PS(VS_OUTPUT input) : SV_Target
         c += sin((atan2(uv.x, uv.y) * 12 - time.x * .3)) * (sin(1 / length(uv * 2) + 5)) * saturate(1 / pow(length(uv),3)) * 2;
     }*/
 
-    return float4(0.5, 0.5, 0.5, 1.);
+    return float4(0.5, 0.9, 0.5, 1.);
 
 }
