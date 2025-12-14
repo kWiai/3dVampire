@@ -1,6 +1,6 @@
 cbuffer global : register(b5)
 {
-    float4 gConst[32];
+    float4 gConst[4096];
 };
 
 cbuffer frame : register(b4)
@@ -34,12 +34,20 @@ struct VS_OUTPUT
     float4 wpos : POSITION1;
     float4 vnorm : NORMAL1;
     float2 uv : TEXCOORD0;
+    uint instanceID : TEXCOORD1;
 };
 
 float4 PS(VS_OUTPUT input) : SV_Target
 {
-    float pi = 3.141519;
-
+    /*float pi = 3.141519;*/
+    int quadID = (input.instanceID /6) % 10;
+float4 color = float4(0.0, 0.0, 0.0, 1.);
+if (quadID % 2 == 1) {
+    color = float4(0.5, 0.9, 0.5, 1.);
+    }
+else if (quadID % 2 == 0) {
+    color = float4(0.5, 0.7, 0.5, 1.);
+}
 //return float4(frac(input.uv.x+time.x*.01), 0, 0, 1);
 
     /*float c = 0;
@@ -50,6 +58,6 @@ float4 PS(VS_OUTPUT input) : SV_Target
         c += sin((atan2(uv.x, uv.y) * 12 - time.x * .3)) * (sin(1 / length(uv * 2) + 5)) * saturate(1 / pow(length(uv),3)) * 2;
     }*/
 
-    return float4(0.5, 0.9, 0.5, 1.);
+    return color;
 
 }

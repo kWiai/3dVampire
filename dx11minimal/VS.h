@@ -29,19 +29,20 @@ struct VS_OUTPUT
     float4 wpos : POSITION1;
     float4 vnorm : NORMAL1;
     float2 uv : TEXCOORD0;
+    uint instanceID : TEXCOORD1;
 };
 
-float3 rotY(float3 pos, float a)
-{
-    float3x3 m =
-    {
-        cos(a), 0, sin(a),
-        0, 1, 0,
-        -sin(a), 0, cos(a)
-    };
-    pos = mul(pos, m);
-    return pos;
-}
+//float3 rotY(float3 pos, float a)
+//{
+//    float3x3 m =
+//    {
+//        cos(a), 0, sin(a),
+//        0, 1, 0,
+//        -sin(a), 0, cos(a)
+//    };
+//    pos = mul(pos, m);
+//    return pos;
+//}
 
 VS_OUTPUT VS(uint vID : SV_VertexID)
 {
@@ -49,7 +50,7 @@ VS_OUTPUT VS(uint vID : SV_VertexID)
 
     // Параметры сетки
     float gridSize = gConst[0].x;        // Размер сетки (например, 10x10)
-    float spacing = gConst[0].y;         // Расстояние между квадратами
+    float spacing = gConst[0].y;         // Размер квада
     float height = gConst[0].z;          // Высота (Y координата)
 
     // 1. Определяем квадрат и вершину
@@ -77,6 +78,7 @@ VS_OUTPUT VS(uint vID : SV_VertexID)
 
     output.pos = mul(pos, mul(view[0], proj[0]));
     output.uv = float2(localPos.x, localPos.z);  // UV по X и Z
+    output.instanceID = vID;
 
     return output;
 }

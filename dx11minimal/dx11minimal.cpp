@@ -201,7 +201,6 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             camZ -= XMVectorGetZ(right) * camSpeed;
             
         }
-
         // D - Вправо (strafe right)
         if (GetAsyncKeyState(0x44) & 0x8000) {  // D
             camX += XMVectorGetX(right) * camSpeed;
@@ -225,6 +224,29 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         if (GetAsyncKeyState(0x45) & 0x8000) {  // E
             camYaw += camSpeed * 0.5f;
         }
+
+        
+        if (GetAsyncKeyState(VK_RIGHT) & 0x8000) {  
+            heroX += heroSpeed;
+            
+        }
+
+        if (GetAsyncKeyState(VK_UP) & 0x8000) {  
+            heroZ += heroSpeed;
+        }
+
+       
+        if (GetAsyncKeyState(VK_DOWN) & 0x8000) {  
+            heroZ -= heroSpeed;
+        }
+
+        
+        if (GetAsyncKeyState(VK_LEFT) & 0x8000) {  
+            heroX -= heroSpeed;
+
+        }
+
+        
 
         break;
     }

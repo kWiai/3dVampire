@@ -464,6 +464,8 @@ namespace Shaders {
 	{
 		CreateVS(0, nameToPatchLPCWSTR("VS.h"));
 		CreatePS(0, nameToPatchLPCWSTR("PS.h"));
+		CreateVS(1, nameToPatchLPCWSTR("HeroVS.h"));
+		CreatePS(1, nameToPatchLPCWSTR("HeroPS.h"));
 	}
 
 	void vShader(unsigned int n)
@@ -918,6 +920,7 @@ namespace Camera
 		// 1. Ограничиваем pitch (чтобы не перевернуться)
 		camPitch = max(-XM_PIDIV2 + 0.001f, min(XM_PIDIV2 - 0.001f, camPitch));
 		float fixedPitch = camPitch - XM_PIDIV4;  // -45° (вниз)
+
 		// 2. Вычисляем направление взгляда на основе yaw и pitch
 		XMVECTOR direction = XMVectorSet(
 			cos(fixedPitch) * sin(camYaw),
@@ -934,7 +937,7 @@ namespace Camera
 			0.0f
 		);
 
-		// 4. Вектор "вверх" (up vector) - перпендикулярно direction и right
+		// 4. Вектор "вверх" 
 		XMVECTOR up = XMVector3Cross(right, direction);
 
 		// 5. Позиция камеры и точка, куда она смотрит
@@ -947,8 +950,8 @@ namespace Camera
 			XMMatrixLookAtLH(eye, target, up)
 		);
 
-		// 7. Проекция (рекомендую уменьшить FOV для более естественного вида)
-		float angle = 60.0f;  // Вместо 100 градусов
+		// 7. Проекция 
+		float angle = 60.0f;  
 		ConstBuf::camera.proj[0] = XMMatrixTranspose(
 			XMMatrixPerspectiveFovLH(DegreesToRadians(angle), iaspect, 0.1f, 1000.0f)
 		);
@@ -958,7 +961,26 @@ namespace Camera
 		ConstBuf::ConstToPixel(3);
 	}
 }
-
+void drawHero() {
+	ZeroMemory(ConstBuf::global, sizeof(ConstBuf::global));
+	ConstBuf::global[0] = XMFLOAT4{ heroX,heroZ,heroY,heroSize };
+	ConstBuf::Update(5, ConstBuf::global);
+	ConstBuf::ConstToVertex(5);
+	/*ConstBuf::ConstToPixel(5);*/
+	Shaders::vShader(1);
+	Shaders::pShader(1);
+	Draw::NullDrawer(6, 1);
+}
+void drawMap() {
+	ZeroMemory(ConstBuf::global, sizeof(ConstBuf::global));
+	ConstBuf::global[0] = XMFLOAT4{ mapGrid,quadSize,0.0f,0.0f };
+	ConstBuf::Update(5, ConstBuf::global);
+	ConstBuf::ConstToVertex(5);
+	ConstBuf::ConstToPixel(5);
+	Shaders::vShader(0);
+	Shaders::pShader(0);
+	Draw::NullDrawer((int)mapGrid * mapGrid, 1);
+}
 void mainLoop()
 {
 	frameConst();
@@ -973,16 +995,11 @@ void mainLoop()
 	Rasterizer::Cull(Rasterizer::cullmode::off);
 
 	
-	ConstBuf::global[0] = XMFLOAT4{ mapSize,5.0f,0.0f,0.0f };
-	ConstBuf::Update(5, ConstBuf::global);
-	ConstBuf::ConstToVertex(5);
-
-	Shaders::vShader(0);
-	Shaders::pShader(0);
+	drawHero();
+	drawMap();
 	ConstBuf::ConstToVertex(4);
 	ConstBuf::ConstToPixel(4);
-
+	
 	Camera::Camera();
-	Draw::NullDrawer((int)mapSize*mapSize, 1);
 	Draw::Present();
 }

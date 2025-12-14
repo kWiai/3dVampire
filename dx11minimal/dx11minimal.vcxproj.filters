@@ -33,6 +33,12 @@
     <ClInclude Include="global.h">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="HeroVS.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="HeroPS.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dx11minimal.cpp">
