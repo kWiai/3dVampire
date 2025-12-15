@@ -22,6 +22,9 @@ static inline int spawnChance = 1000;
 //static inline float heroSize = 0.5f;
 //static inline float heroY = heroSize;
 //static inline float heroSpeed = 0.1f;
+static std::random_device rd;
+static std::mt19937 gen(rd());
+
 
 class Unit {
 public:
@@ -35,11 +38,9 @@ public:
 };
 std::vector<Unit> enemys;
 
-Unit mainHero(0.0f, 0.5f, 0.0f, 0.5f, 0.1f, 100.0f, 1.0f );
+Unit mainHero(0.0f, 0.5f, 0.0f, 0.5f, 0.1f, 10.0f, 1.0f );
 
 void spawnEnemy() {
-	std::random_device rd;   // non-deterministic generator
-	std::mt19937 gen(rd());  // to seed mersenne twister.
 	std::uniform_int_distribution<> dist(1.0f, 5.0f); 
  
 	float x = mainHero.unitX + dist(gen);
@@ -50,21 +51,29 @@ void spawnEnemy() {
 
 void processEnemys() {
 	if (sizeof(enemys) > 0) {
-		std::random_device rd;   // non-deterministic generator
-		std::mt19937 gen(rd());  // to seed mersenne twister.
-		std::uniform_int_distribution<> dist(-0.3f, 0.3f);
+		static std::uniform_real_distribution<float> dist(-0.1f, 0.1f);
 		for (auto& enemy : enemys) {
+			float randomVariation = dist(gen);
+			float effectiveSpeed = enemy.unitSpeed + randomVariation;
 			if (enemy.unitX > mainHero.unitX) {
-				enemy.unitX -= enemy.unitSpeed + dist(gen);
+				enemy.unitX -= effectiveSpeed;
 			}
 			else {
-				enemy.unitX += enemy.unitSpeed + dist(gen);
+				enemy.unitX += effectiveSpeed;
 			}
 			if (enemy.unitZ > mainHero.unitZ) {
-				enemy.unitZ -= enemy.unitSpeed + dist(gen);
+				enemy.unitZ -= effectiveSpeed;
 			}
 			else {
-				enemy.unitZ += enemy.unitSpeed + dist(gen);
+				enemy.unitZ += effectiveSpeed;
+			}
+			if ((enemy.unitX + (enemy.unitSize / 2) > mainHero.unitX - (mainHero.unitSize / 2)&&
+				(enemy.unitX - (enemy.unitSize / 2) < mainHero.unitX + (mainHero.unitSize / 2))) &&
+				(enemy.unitZ + (enemy.unitSize/2) > mainHero.unitZ - (mainHero.unitSize/2) &&
+				enemy.unitZ - (enemy.unitSize / 2) < mainHero.unitZ + (mainHero.unitSize / 2))) {
+				mainHero.health = max(0.0f,mainHero.health-0.2);
+				
+
 			}
 		}
 	}

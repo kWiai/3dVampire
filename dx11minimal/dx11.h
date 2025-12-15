@@ -468,6 +468,8 @@ namespace Shaders {
 		CreatePS(1, nameToPatchLPCWSTR("HeroPS.h"));
 		CreateVS(2, nameToPatchLPCWSTR("unitVS.h"));
 		CreatePS(2, nameToPatchLPCWSTR("unitPS.h"));
+		CreateVS(3, nameToPatchLPCWSTR("healthVS.h"));
+		CreatePS(3, nameToPatchLPCWSTR("healthPS.h"));
 	}
 
 	void vShader(unsigned int n)
@@ -1050,10 +1052,30 @@ void UpdatePositions() {
 		}
 		
 	}
+}
+void ShowHealth() {
+                                                             
+	ZeroMemory(ConstBuf::global, sizeof(ConstBuf::global));
+	Shaders::vShader(3);                                                                                     
+	Shaders::pShader(3);
+	
+	float healthRatio = max(0.0f, (0.58f*mainHero.health/100));
+	
 
+	ConstBuf::global[0] = XMFLOAT4(                                                                          
+		healthRatio,
+		0.0f,
+		0.0f,
+		0.0f
 
+	);
+
+	ConstBuf::Update(5, ConstBuf::global);
+	ConstBuf::ConstToVertex(5);
+	Draw::NullDrawer(5);
 
 }
+
 void mainLoop()
 {
 	frameConst();
@@ -1076,6 +1098,10 @@ void mainLoop()
 	drawEnemys();
 	drawMap();
 	processEnemys();
+	ShowHealth();
+	//if (mainHero.health == 0.0f) {
+	//	DestroyWindow(hWnd);
+	//}
 	ConstBuf::ConstToVertex(4);
 	ConstBuf::ConstToPixel(4);
 	
