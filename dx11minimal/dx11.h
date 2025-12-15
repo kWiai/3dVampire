@@ -963,7 +963,7 @@ namespace Camera
 }
 void drawHero() {
 	ZeroMemory(ConstBuf::global, sizeof(ConstBuf::global));
-	ConstBuf::global[0] = XMFLOAT4{ heroX,heroZ,heroY,heroSize };
+	ConstBuf::global[0] = XMFLOAT4{ mainHero.unitX,mainHero.unitZ,mainHero.unitY,mainHero.unitSize };
 	ConstBuf::Update(5, ConstBuf::global);
 	ConstBuf::ConstToVertex(5);
 	/*ConstBuf::ConstToPixel(5);*/
@@ -980,6 +980,42 @@ void drawMap() {
 	Shaders::vShader(0);
 	Shaders::pShader(0);
 	Draw::NullDrawer((int)mapGrid * mapGrid, 1);
+}
+void UpdatePositions() {
+	XMVECTOR forward = XMVectorSet(sin(camYaw), 0, cos(camYaw), 0);
+	XMVECTOR right = XMVectorSet(cos(camYaw), 0, -sin(camYaw), 0);
+	XMVECTOR up = XMVectorSet(0, 1, 0, 0);
+
+	// W - Вперёд (относительно направления взгляда)
+	if (GetAsyncKeyState(0x57) & 0x8000) {  // W
+		camX += XMVectorGetX(forward) * mainHero.unitSpeed;
+		camZ += XMVectorGetZ(forward) * mainHero.unitSpeed;
+		mainHero.unitZ += mainHero.unitSpeed;
+	}
+
+	// S - Назад
+	if (GetAsyncKeyState(0x53) & 0x8000) {  // S
+		camX -= XMVectorGetX(forward) * mainHero.unitSpeed;
+		camZ -= XMVectorGetZ(forward) * mainHero.unitSpeed;
+		mainHero.unitZ -= mainHero.unitSpeed;
+	}
+
+	// A - Влево (strafe left)
+	if (GetAsyncKeyState(0x41) & 0x8000) {  // A
+		camX -= XMVectorGetX(right) * mainHero.unitSpeed;
+		camZ -= XMVectorGetZ(right) * mainHero.unitSpeed;
+		mainHero.unitX -= mainHero.unitSpeed;
+
+	}
+	// D - Вправо (strafe right)
+	if (GetAsyncKeyState(0x44) & 0x8000) {  // D
+		mainHero.unitX += mainHero.unitSpeed;
+		camX += XMVectorGetX(right) * mainHero.unitSpeed;
+		camZ += XMVectorGetZ(right) * mainHero.unitSpeed;
+	}
+
+
+
 }
 void mainLoop()
 {
@@ -1002,4 +1038,5 @@ void mainLoop()
 	
 	Camera::Camera();
 	Draw::Present();
+	UpdatePositions();
 }

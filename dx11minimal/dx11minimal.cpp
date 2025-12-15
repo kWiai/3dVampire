@@ -99,7 +99,7 @@ ATOM MyRegisterClass(HINSTANCE hInstance)
     wcex.hIcon          = LoadIcon(hInstance, MAKEINTRESOURCE(IDI_DX11MINIMAL));
     wcex.hCursor        = LoadCursor(nullptr, IDC_ARROW);
     wcex.hbrBackground  = (HBRUSH)(COLOR_WINDOW+1);
-    wcex.lpszMenuName   = MAKEINTRESOURCEW(IDC_DX11MINIMAL);
+    wcex.lpszMenuName   = NULL;
     wcex.lpszClassName  = szWindowClass;
     wcex.hIconSm        = LoadIcon(wcex.hInstance, MAKEINTRESOURCE(IDI_SMALL));
 
@@ -119,9 +119,10 @@ ATOM MyRegisterClass(HINSTANCE hInstance)
 BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 {
    hInst = hInstance; // Store instance handle in our global variable
-
-   hWnd = CreateWindowW(szWindowClass, szTitle, WS_OVERLAPPEDWINDOW,
-      CW_USEDEFAULT, 0, CW_USEDEFAULT, 0, nullptr, nullptr, hInstance, nullptr);
+   int screenWidth = GetSystemMetrics(SM_CXSCREEN);
+   int screenHeight = GetSystemMetrics(SM_CYSCREEN);
+   hWnd = CreateWindowW(szWindowClass, szTitle, WS_POPUP|WS_VISIBLE,
+      0, 0, screenWidth, screenHeight, nullptr, nullptr, hInstance, nullptr);
 
    if (!hWnd)
    {
@@ -149,107 +150,40 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     switch (message)
     {
     case WM_COMMAND:
+    {
+        int wmId = LOWORD(wParam);
+        // Parse the menu selections:
+        switch (wmId)
         {
-            int wmId = LOWORD(wParam);
-            // Parse the menu selections:
-            switch (wmId)
-            {
-            case IDM_ABOUT:
-                DialogBox(hInst, MAKEINTRESOURCE(IDD_ABOUTBOX), hWnd, About);
-                break;
-            case IDM_EXIT:
-                DestroyWindow(hWnd);
-                break;
-            default:
-                return DefWindowProc(hWnd, message, wParam, lParam);
-            }
+        case IDM_ABOUT:
+            DialogBox(hInst, MAKEINTRESOURCE(IDD_ABOUTBOX), hWnd, About);
+            break;
+        case IDM_EXIT:
+            DestroyWindow(hWnd);
+            break;
+        default:
+            return DefWindowProc(hWnd, message, wParam, lParam);
         }
-        break;
+    }
+    break;
     case WM_PAINT:
-        {
-            PAINTSTRUCT ps;
-            HDC hdc = BeginPaint(hWnd, &ps);
-            // TODO: Add any drawing code that uses hdc here...
-            EndPaint(hWnd, &ps);
+    {
+        PAINTSTRUCT ps;
+        HDC hdc = BeginPaint(hWnd, &ps);
+        // TODO: Add any drawing code that uses hdc here...
+        EndPaint(hWnd, &ps);
+    }
+    break;
+    case WM_KEYDOWN:{
+        if (GetAsyncKeyState(VK_ESCAPE) & 0x8000) {
+            DestroyWindow(hWnd);
         }
+    }
         break;
     case WM_DESTROY:
         PostQuitMessage(0);
         break;
-    case WM_KEYDOWN:
-    {
-        // Вычисляем базовые векторы
-        XMVECTOR forward = XMVectorSet(sin(camYaw), 0, cos(camYaw), 0);
-        XMVECTOR right = XMVectorSet(cos(camYaw), 0, -sin(camYaw), 0);
-        XMVECTOR up = XMVectorSet(0, 1, 0, 0);
 
-        // W - Вперёд (относительно направления взгляда)
-        if (GetAsyncKeyState(0x57) & 0x8000) {  // W
-            camX += XMVectorGetX(forward) * camSpeed;
-            camZ += XMVectorGetZ(forward) * camSpeed;
-        }
-
-        // S - Назад
-        if (GetAsyncKeyState(0x53) & 0x8000) {  // S
-            camX -= XMVectorGetX(forward) * camSpeed;
-            camZ -= XMVectorGetZ(forward) * camSpeed;
-        }
-
-        // A - Влево (strafe left)
-        if (GetAsyncKeyState(0x41) & 0x8000) {  // A
-            camX -= XMVectorGetX(right) * camSpeed;
-            camZ -= XMVectorGetZ(right) * camSpeed;
-            
-        }
-        // D - Вправо (strafe right)
-        if (GetAsyncKeyState(0x44) & 0x8000) {  // D
-            camX += XMVectorGetX(right) * camSpeed;
-            camZ += XMVectorGetZ(right) * camSpeed;
-        }
-
-        // Space - Вверх (по мировой оси Y)
-        if (GetAsyncKeyState(VK_SPACE) & 0x8000) {
-            camY += camSpeed;
-        }
-
-        // Ctrl - Вниз
-        if (GetAsyncKeyState(VK_CONTROL) & 0x8000) {
-            camY -= camSpeed;
-        }
-
-        // Q/E - Вращение камеры (альтернатива мышке)
-        if (GetAsyncKeyState(0x51) & 0x8000) {  // Q
-            camYaw -= camSpeed * 0.5f;
-        }
-        if (GetAsyncKeyState(0x45) & 0x8000) {  // E
-            camYaw += camSpeed * 0.5f;
-        }
-
-        
-        if (GetAsyncKeyState(VK_RIGHT) & 0x8000) {  
-            heroX += heroSpeed;
-            
-        }
-
-        if (GetAsyncKeyState(VK_UP) & 0x8000) {  
-            heroZ += heroSpeed;
-        }
-
-       
-        if (GetAsyncKeyState(VK_DOWN) & 0x8000) {  
-            heroZ -= heroSpeed;
-        }
-
-        
-        if (GetAsyncKeyState(VK_LEFT) & 0x8000) {  
-            heroX -= heroSpeed;
-
-        }
-
-        
-
-        break;
-    }
        
             
     default:
