@@ -466,6 +466,8 @@ namespace Shaders {
 		CreatePS(0, nameToPatchLPCWSTR("PS.h"));
 		CreateVS(1, nameToPatchLPCWSTR("HeroVS.h"));
 		CreatePS(1, nameToPatchLPCWSTR("HeroPS.h"));
+		CreateVS(2, nameToPatchLPCWSTR("unitVS.h"));
+		CreatePS(2, nameToPatchLPCWSTR("unitPS.h"));
 	}
 
 	void vShader(unsigned int n)
@@ -971,6 +973,20 @@ void drawHero() {
 	Shaders::pShader(1);
 	Draw::NullDrawer(6, 1);
 }
+void drawEnemys() {
+	if (sizeof(enemys) > 0) {
+		for (const auto& enemy : enemys) {
+			ZeroMemory(ConstBuf::global, sizeof(ConstBuf::global));
+			ConstBuf::global[0] = XMFLOAT4{ enemy.unitX,enemy.unitZ,enemy.unitY,enemy.unitSize };
+			ConstBuf::Update(5, ConstBuf::global);
+			ConstBuf::ConstToVertex(5);
+			/*ConstBuf::ConstToPixel(5);*/
+			Shaders::vShader(2);
+			Shaders::pShader(2);
+			Draw::NullDrawer(6, 1);
+		}
+	}
+}
 void drawMap() {
 	ZeroMemory(ConstBuf::global, sizeof(ConstBuf::global));
 	ConstBuf::global[0] = XMFLOAT4{ mapGrid,quadSize,0.0f,0.0f };
@@ -1050,10 +1066,16 @@ void mainLoop()
 	Draw::ClearDepth();
 	Depth::Depth(Depth::depthmode::on);
 	Rasterizer::Cull(Rasterizer::cullmode::off);
-
-	
+	std::random_device rd;   // non-deterministic generator
+	std::mt19937 gen(rd());  // to seed mersenne twister.
+	std::uniform_int_distribution<> dist(1, spawnChance);
+	if (dist(gen) == 1) {
+		spawnEnemy();
+	}
 	drawHero();
+	drawEnemys();
 	drawMap();
+	processEnemys();
 	ConstBuf::ConstToVertex(4);
 	ConstBuf::ConstToPixel(4);
 	
