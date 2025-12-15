@@ -1,4 +1,5 @@
 #include <iostream>
+#include <vector>
 #pragma once
 
 static inline float camX = 0.0f;
@@ -13,6 +14,7 @@ static inline float mapGrid = 11.0f;
 static inline float	quadSize = 5.0f;
 static inline float mapSizeX = mapGrid *quadSize;
 static inline float mapSizeY = mapGrid *quadSize;
+static inline float gravitation = 0.1f;
 //static inline float heroX = 0.0f;
 //static inline float heroZ = 0.0f;
 //static inline float heroSize = 0.5f;
@@ -26,7 +28,9 @@ public:
 	float unitZ = 0.0f;
 	float unitSize = 0.0f;
 	float unitSpeed = 0.0f;
-	float health = 100.0f;
+	float health = 0.0f;
+	float jumpStrange = 0.0f;
 };
+std::vector<Unit> enemys;
 
-Unit mainHero(0.0f, 0.5f, 0.0f, 0.5f, 0.1f);
+Unit mainHero(0.0f, 0.5f, 0.0f, 0.5f, 0.1f, 100.0f, 1.0f );

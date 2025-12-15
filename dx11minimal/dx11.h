@@ -985,7 +985,9 @@ void UpdatePositions() {
 	XMVECTOR forward = XMVectorSet(sin(camYaw), 0, cos(camYaw), 0);
 	XMVECTOR right = XMVectorSet(cos(camYaw), 0, -sin(camYaw), 0);
 	XMVECTOR up = XMVectorSet(0, 1, 0, 0);
-
+	if ((mainHero.unitY - mainHero.unitSize) > 0.0f) {
+		mainHero.unitY = max(mainHero.unitSize,mainHero.unitY-gravitation);
+	}
 	// W - Вперёд (относительно направления взгляда)
 	if (GetAsyncKeyState(0x57) & 0x8000) {  // W
 		camX += XMVectorGetX(forward) * mainHero.unitSpeed;
@@ -1012,6 +1014,25 @@ void UpdatePositions() {
 		mainHero.unitX += mainHero.unitSpeed;
 		camX += XMVectorGetX(right) * mainHero.unitSpeed;
 		camZ += XMVectorGetZ(right) * mainHero.unitSpeed;
+	}
+
+	if (GetAsyncKeyState(VK_SPACE) & 0x8000) {  // JUMP
+		/*velocity_y = jump_force  # начальная скорость
+			# Затем в каждом кадре :
+		position_y += velocity_y * delta_time
+			velocity_y -= gravity * delta_time  # гравитация снижает скорость
+
+			# Проверка земли
+			if position_y <= 0:
+		position_y = 0
+			velocity_y = 0
+			is_grounded = True*/
+		if ((mainHero.unitY - mainHero.unitSize) == 0.0f) {
+			
+			mainHero.unitY += mainHero.jumpStrange;
+			
+		}
+		
 	}
 
 
