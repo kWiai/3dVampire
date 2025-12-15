@@ -45,7 +45,7 @@ void spawnEnemy() {
  
 	float x = mainHero.unitX + dist(gen);
 	float z = mainHero.unitZ + dist(gen);
-	Unit enemy(x, 0.5f, z, 0.5f, 0.05f, 10.0f);
+	Unit enemy(x, 0.25f, z, 0.25f, 0.05f, 10.0f);
 	enemys.push_back(enemy);
 }
 

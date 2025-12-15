@@ -1099,9 +1099,9 @@ void mainLoop()
 	drawMap();
 	processEnemys();
 	ShowHealth();
-	//if (mainHero.health == 0.0f) {
-	//	DestroyWindow(hWnd);
-	//}
+	if (mainHero.health == 0.0f) {
+		DestroyWindow(hWnd);
+	}
 	ConstBuf::ConstToVertex(4);
 	ConstBuf::ConstToPixel(4);
 	
