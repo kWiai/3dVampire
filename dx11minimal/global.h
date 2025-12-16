@@ -48,7 +48,28 @@ void spawnEnemy() {
 	Unit enemy(x, 0.25f, z, 0.25f, 0.05f, 10.0f);
 	enemys.push_back(enemy);
 }
+void checkEnemyCollisions(Unit& currentEnemy) {
+	for (auto& other : enemys) {
+		if (&currentEnemy == &other) continue;
 
+		float dx = currentEnemy.unitX - other.unitX;
+		float dz = currentEnemy.unitZ - other.unitZ;
+		float distance = sqrt(dx * dx + dz * dz);
+		float minDistance = currentEnemy.unitSize + other.unitSize;
+
+		if (distance < minDistance && distance > 0) {
+			// Разделяем врагов
+			float overlap = minDistance - distance;
+			float separateX = (dx / distance) * overlap * 0.5f;
+			float separateZ = (dz / distance) * overlap * 0.5f;
+
+			currentEnemy.unitX += separateX;
+			currentEnemy.unitZ += separateZ;
+			other.unitX -= separateX;
+			other.unitZ -= separateZ;
+		}
+	}
+}
 void processEnemys() {
 	if (sizeof(enemys) > 0) {
 		static std::uniform_real_distribution<float> dist(-0.1f, 0.1f);
@@ -103,6 +124,7 @@ void processEnemys() {
 
 				}
 			}
+			checkEnemyCollisions(enemy);
 		}
 	}
 }
