@@ -11,6 +11,7 @@
 #include <DirectXPackedVector.h>
 #include <debugapi.h>
 #include "global.h"
+#include <cmath>
 
 using namespace DirectX;
 
@@ -1099,6 +1100,7 @@ void mainLoop()
 	drawMap();
 	processEnemys();
 	ShowHealth();
+	damageCooldown = max(0.0f, (damageCooldown - (FRAME_LEN / 1000.0f)));
 	if (mainHero.health == 0.0f) {
 		DestroyWindow(hWnd);
 	}

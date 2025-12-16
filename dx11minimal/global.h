@@ -1,6 +1,7 @@
 #include <iostream>
 #include <vector>
 #include <random>
+#include <cmath>
 #pragma once
 
 static inline float camX = 0.0f;
@@ -17,11 +18,10 @@ static inline float mapSizeX = mapGrid *quadSize;
 static inline float mapSizeY = mapGrid *quadSize;
 static inline float gravitation = 0.1f;
 static inline int spawnChance = 1000;
-//static inline float heroX = 0.0f;
-//static inline float heroZ = 0.0f;
-//static inline float heroSize = 0.5f;
-//static inline float heroY = heroSize;
-//static inline float heroSpeed = 0.1f;
+static float damageCooldown = 0.0f;
+const float DAMAGE_INTERVAL = 0.5f; 
+
+
 static std::random_device rd;
 static std::mt19937 gen(rd());
 
@@ -67,13 +67,41 @@ void processEnemys() {
 			else {
 				enemy.unitZ += effectiveSpeed;
 			}
-			if ((enemy.unitX + (enemy.unitSize / 2) > mainHero.unitX - (mainHero.unitSize / 2)&&
-				(enemy.unitX - (enemy.unitSize / 2) < mainHero.unitX + (mainHero.unitSize / 2))) &&
-				(enemy.unitZ + (enemy.unitSize/2) > mainHero.unitZ - (mainHero.unitSize/2) &&
-				enemy.unitZ - (enemy.unitSize / 2) < mainHero.unitZ + (mainHero.unitSize / 2))) {
-				mainHero.health = max(0.0f,mainHero.health-0.2);
-				
 
+			float enemyLeft = enemy.unitX - enemy.unitSize / 2;
+			float enemyRight = enemy.unitX + enemy.unitSize / 2;
+			float enemyFront = enemy.unitZ - enemy.unitSize / 2;
+			float enemyBack = enemy.unitZ + enemy.unitSize / 2;
+
+			float heroLeft = mainHero.unitX - mainHero.unitSize / 2;
+			float heroRight = mainHero.unitX + mainHero.unitSize / 2;
+			float heroFront = mainHero.unitZ - mainHero.unitSize / 2;
+			float heroBack = mainHero.unitZ + mainHero.unitSize / 2;
+
+			// AABB коллизия
+			bool collisionX = enemyRight > heroLeft && enemyLeft < heroRight;
+			bool collisionZ = enemyBack > heroFront && enemyFront < heroBack;
+
+			if (collisionX && collisionZ) {
+				if (damageCooldown <= 0.0f) {
+					damageCooldown = DAMAGE_INTERVAL;
+					mainHero.health = max(0.0f, mainHero.health - 1.0f);
+					float pushForce = 0.3f;
+					if (enemy.unitX > mainHero.unitX) {
+						enemy.unitX += pushForce;
+					}
+					else {
+						enemy.unitX -= pushForce;
+					}
+
+					if (enemy.unitZ > mainHero.unitZ) {
+						enemy.unitZ += pushForce;
+					}
+					else {
+						enemy.unitZ -= pushForce;
+					}
+
+				}
 			}
 		}
 	}
