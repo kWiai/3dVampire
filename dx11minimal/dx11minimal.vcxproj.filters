@@ -39,16 +39,25 @@
     <ClInclude Include="HeroPS.h">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="unitPS.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="unitVS.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="healthPS.h">
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="healthVS.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="unitPS.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="unitVS.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="swordPS.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="effectPS.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="indicatorPS.h">
       <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>

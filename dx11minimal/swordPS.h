@@ -1,0 +1,44 @@
+#pragma once
+cbuffer global : register(b5)
+{
+    float4 gConst[4096];
+};
+
+cbuffer frame : register(b4)
+{
+    float4 time;
+    float4 aspect;
+};
+
+cbuffer camera : register(b3)
+{
+    float4x4 world[2];
+    float4x4 view[2];
+    float4x4 proj[2];
+};
+
+cbuffer drawMat : register(b2)
+{
+    float4x4 model;
+    float hilight;
+};
+
+cbuffer params : register(b1)
+{
+    float r, g, b;
+};
+
+struct VS_OUTPUT
+{
+    float4 pos : SV_POSITION;
+    float4 vpos : POSITION0;
+    float4 wpos : POSITION1;
+    float4 vnorm : NORMAL1;
+    float2 uv : TEXCOORD0;
+};
+float4 PS(VS_OUTPUT input) : SV_Target
+{
+    // Золотой меч с пульсацией
+    float pulse = sin(time.x * 8.0f) * 0.3f + 0.7f;
+    return float4(1.0f, 0.8f, 0.2f, 1.0f) * pulse;
+}

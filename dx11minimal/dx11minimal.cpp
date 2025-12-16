@@ -174,6 +174,41 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         EndPaint(hWnd, &ps);
     }
     break;
+
+    case WM_MOUSEMOVE:
+    {
+        if (isMouseInWindow) {
+            int x = (int)(short)LOWORD(lParam);
+            int y = (int)(short)HIWORD(lParam);
+
+            RECT rect;
+            GetClientRect(hWnd, &rect);
+            int width = rect.right - rect.left;
+            int height = rect.bottom - rect.top;
+
+            // Преобразуем экранные координаты в мировые
+            float normalizedX = (2.0f * x) / width - 1.0f;
+            float normalizedZ = 1.0f - (2.0f * y) / height;
+
+            // Сохраняем позицию мыши в мировых координатах
+            mouseWorldX = mainHero.unitX + normalizedX * 10.0f;
+            mouseWorldZ = mainHero.unitZ + normalizedZ * 10.0f;
+
+            lastMousePos.x = x;
+            lastMousePos.y = y;
+        }
+    }
+    break;
+
+    case WM_ENTERMENULOOP:
+    case WM_ENTERSIZEMOVE:
+        isMouseInWindow = false;
+        break;
+
+    case WM_EXITMENULOOP:
+    case WM_EXITSIZEMOVE:
+        isMouseInWindow = true;
+        break;
     case WM_KEYDOWN:{
         if (GetAsyncKeyState(VK_ESCAPE) & 0x8000) {
             DestroyWindow(hWnd);

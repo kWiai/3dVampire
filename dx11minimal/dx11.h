@@ -471,6 +471,12 @@ namespace Shaders {
 		CreatePS(2, nameToPatchLPCWSTR("unitPS.h"));
 		CreateVS(3, nameToPatchLPCWSTR("healthVS.h"));
 		CreatePS(3, nameToPatchLPCWSTR("healthPS.h"));
+
+		// Новые для меча и эффектов (если создали отдельные файлы)
+		CreateVS(4, nameToPatchLPCWSTR("HeroVS.h")); // Для меча
+		CreatePS(4, nameToPatchLPCWSTR("swordPS.h"));
+		CreateVS(5, nameToPatchLPCWSTR("unitVS.h")); // Для эффектов
+		CreatePS(5, nameToPatchLPCWSTR("effectPS.h"));
 	}
 
 	void vShader(unsigned int n)
@@ -966,6 +972,214 @@ namespace Camera
 		ConstBuf::ConstToPixel(3);
 	}
 }
+
+void GetAttackDirectionFromMouse(float& dirX, float& dirZ) {
+	RECT clientRect;
+	GetClientRect(hWnd, &clientRect);
+	int windowWidth = clientRect.right - clientRect.left;
+	int windowHeight = clientRect.bottom - clientRect.top;
+
+	// Центр экрана
+	int centerX = windowWidth / 2;
+	int centerY = windowHeight / 2;
+
+	// Позиция мыши
+	POINT mousePos;
+	GetCursorPos(&mousePos);
+	ScreenToClient(hWnd, &mousePos);
+
+	// Вектор от центра к мыши
+	float dx = (float)(mousePos.x - centerX);
+	float dy = (float)(mousePos.y - centerY);
+
+	// Угол: 0° = вверх (вперед), 90° = вправо, 180° = вниз (назад), 270° = влево
+	float angle = atan2(dx, -dy);
+
+	// Направление
+	dirX = sin(angle);
+	dirZ = cos(angle);
+
+	// Сохраняем угол для анимации
+	mainHero.attackAngle = angle;
+}
+void ProcessSwordAttack() {
+	// Обновление кулдауна
+	if (mainHero.attackCooldown > 0.0f) {
+		mainHero.attackCooldown -= FRAME_LEN / 1000.0f;
+	}
+
+	// Обновление анимации атаки
+	if (mainHero.isAttacking) {
+		mainHero.attackAnimation += FRAME_LEN / 1000.0f;
+		float progress = mainHero.attackAnimation / ATTACK_DURATION;
+
+		// Получаем направление от мыши
+		float dirX, dirZ;
+		GetAttackDirectionFromMouse(dirX, dirZ);
+
+		// Позиция меча - ТОЧНО там же где был индикатор!
+		float swordX = mainHero.unitX + dirX * SWORD_LENGTH;
+		float swordZ = mainHero.unitZ + dirZ * SWORD_LENGTH;
+		float swordY = mainHero.unitY + SWORD_HEIGHT; // Та же высота!
+
+		// Размер меча меняется во время атаки
+		float swordSize = 0.3f;
+		if (progress < 0.5f) {
+			swordSize = 0.1f + progress * 0.4f; // Растет
+		}
+		else {
+			swordSize = 0.3f - (progress - 0.5f) * 0.4f; // Уменьшается
+		}
+
+		// Сохраняем для отрисовки
+		if (swordEffects.empty()) {
+			swordEffects.push_back(XMFLOAT4{ swordX, swordY, swordZ, swordSize });
+		}
+		else {
+			swordEffects[0] = XMFLOAT4{ swordX, swordY, swordZ, swordSize };
+		}
+
+		// Проверка попадания (в середине атаки)
+		if (progress > 0.3f && progress < 0.7f) {
+			static bool hasHit = false;
+			if (!hasHit) {
+				for (auto& enemy : enemys) {
+					float dx = enemy.unitX - swordX;
+					float dz = enemy.unitZ - swordZ;
+					float distance = sqrt(dx * dx + dz * dz);
+
+					if (distance < (enemy.unitSize + swordSize)) {
+						// Наносим урон
+						enemy.health -= mainHero.attackDamage;
+
+						// Эффект попадания
+						hitEffects.push_back(XMFLOAT4{
+							enemy.unitX,
+							enemy.unitY + enemy.unitSize,
+							enemy.unitZ,
+							1.0f
+							});
+
+						// Отбрасывание
+						enemy.unitX += dirX * 2.0f;
+						enemy.unitZ += dirZ * 2.0f;
+
+						hasHit = true;
+					}
+				}
+				hasHit = true;
+			}
+		}
+
+		// Конец атаки
+		if (progress >= 1.0f) {
+			mainHero.isAttacking = false;
+			mainHero.attackAnimation = 0.0f;
+			swordEffects.clear();
+		}
+	}
+
+	// Обработка нажатия ЛКМ
+	static bool wasPressed = false;
+	bool isPressed = (GetAsyncKeyState(VK_LBUTTON) & 0x8000) != 0;
+
+	if (isPressed && !wasPressed && mainHero.attackCooldown <= 0.0f) {
+		mainHero.isAttacking = true;
+		mainHero.attackCooldown = ATTACK_COOLDOWN;
+
+		// Эффект начала атаки
+		float dirX, dirZ;
+		GetAttackDirectionFromMouse(dirX, dirZ);
+
+		hitEffects.push_back(XMFLOAT4{
+			mainHero.unitX + dirX * 0.5f,
+			mainHero.unitY + SWORD_HEIGHT,
+			mainHero.unitZ + dirZ * 0.5f,
+			0.3f
+			});
+	}
+	wasPressed = isPressed;
+
+	// Обновление эффектов
+	for (auto it = hitEffects.begin(); it != hitEffects.end(); ) {
+		it->w -= FRAME_LEN / 1000.0f * 2.0f;
+		if (it->w <= 0.0f) {
+			it = hitEffects.erase(it);
+		}
+		else {
+			++it;
+		}
+	}
+}
+
+void drawSword() {
+	if (!swordEffects.empty()) {
+		const auto& sword = swordEffects[0];
+
+		ZeroMemory(ConstBuf::global, sizeof(ConstBuf::global));
+		// Порядок: X, Z, Y, Size (как в HeroVS.h)
+		ConstBuf::global[0] = XMFLOAT4{
+			sword.x,    // X позиция
+			sword.z,    // Z позиция  
+			sword.y,    // Y позиция (фиксированная высота!)
+			sword.w     // Размер меча
+		};
+
+		ConstBuf::Update(5, ConstBuf::global);
+		ConstBuf::ConstToVertex(5);
+		Shaders::vShader(4);  // Используем шейдер героя
+		Shaders::pShader(4);
+		Draw::NullDrawer(36, 1); // Меч из 36 вершин
+	}
+}
+
+void drawHitEffects() {
+	for (const auto& effect : hitEffects) {
+		ZeroMemory(ConstBuf::global, sizeof(ConstBuf::global));
+		ConstBuf::global[0] = XMFLOAT4{
+			effect.x,    // X
+			effect.z,    // Z
+			effect.y,    // Y
+			effect.w * 0.3f  // Размер зависит от времени жизни
+		};
+
+		ConstBuf::Update(5, ConstBuf::global);
+		ConstBuf::ConstToVertex(5);
+		Shaders::vShader(5);  // Красный цвет
+		Shaders::pShader(5);
+		Draw::NullDrawer(6, 1);
+	}
+}
+
+
+void drawAttackIndicator() {
+	if (!mainHero.isAttacking && mainHero.attackCooldown <= 0.0f) {
+		float dirX, dirZ;
+		GetAttackDirectionFromMouse(dirX, dirZ);
+
+		// Позиция индикатора - фиксированное расстояние от героя
+		float indicatorX = mainHero.unitX + dirX * SWORD_LENGTH;
+		float indicatorZ = mainHero.unitZ + dirZ * SWORD_LENGTH;
+		float indicatorY = mainHero.unitY + SWORD_HEIGHT; // Фиксированная высота!
+
+		ZeroMemory(ConstBuf::global, sizeof(ConstBuf::global));
+		// Порядок: X, Z, Y, Size
+		ConstBuf::global[0] = XMFLOAT4{
+			indicatorX,      // X
+			indicatorZ,      // Z  
+			indicatorY,      // Y (фиксированная!)
+			0.15f           // Маленький размер
+		};
+
+		ConstBuf::Update(5, ConstBuf::global);
+		ConstBuf::ConstToVertex(5);
+		Shaders::vShader(5);  // Используем шейдер врагов (красный)
+		Shaders::pShader(5);
+		Draw::NullDrawer(6, 1);
+	}
+}
+
+
 void drawHero() {
 	ZeroMemory(ConstBuf::global, sizeof(ConstBuf::global));
 	ConstBuf::global[0] = XMFLOAT4{ mainHero.unitX,mainHero.unitZ,mainHero.unitY,mainHero.unitSize };
@@ -1080,7 +1294,6 @@ void ShowHealth() {
 void mainLoop()
 {
 	frameConst();
-
 	InputAssembler::IA(InputAssembler::topology::triList);
 	Blend::Blending(Blend::blendmode::alpha, Blend::blendop::add);
 
@@ -1089,24 +1302,36 @@ void mainLoop()
 	Draw::ClearDepth();
 	Depth::Depth(Depth::depthmode::on);
 	Rasterizer::Cull(Rasterizer::cullmode::off);
-	std::random_device rd;   // non-deterministic generator
-	std::mt19937 gen(rd());  // to seed mersenne twister.
+
+	// Спавн врагов
+	std::random_device rd;
+	std::mt19937 gen(rd());
 	std::uniform_int_distribution<> dist(1, spawnChance);
 	if (dist(gen) == 1) {
 		spawnEnemy();
 	}
-	drawHero();
-	drawEnemys();
-	drawMap();
+
+	// ВАЖНО: правильный порядок отрисовки!
+	drawMap();                 // 1. Карта (фон)
+	drawAttackIndicator();     // 2. Индикатор направления (прозрачный)
+	drawHero();                // 3. Герой
+	drawEnemys();              // 4. Враги
+	drawSword();               // 5. Меч (поверх всего)
+	drawHitEffects();          // 6. Эффекты попадания
+
+	// Логика
 	processEnemys();
+	ProcessSwordAttack();      // Обработка атаки мечом
+
 	ShowHealth();
 	damageCooldown = max(0.0f, (damageCooldown - (FRAME_LEN / 1000.0f)));
-	if (mainHero.health == 0.0f) {
+
+	if (mainHero.health <= 0.0f) {
 		DestroyWindow(hWnd);
 	}
+
 	ConstBuf::ConstToVertex(4);
 	ConstBuf::ConstToPixel(4);
-	
 	Camera::Camera();
 	Draw::Present();
 	UpdatePositions();
