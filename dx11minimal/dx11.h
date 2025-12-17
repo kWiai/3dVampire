@@ -1017,18 +1017,18 @@ void ProcessSwordAttack() {
 		float dirX, dirZ;
 		GetAttackDirectionFromMouse(dirX, dirZ);
 
-		// Позиция меча - ТОЧНО там же где был индикатор!
+		// Позиция меча
 		float swordX = mainHero.unitX + dirX * SWORD_LENGTH;
 		float swordZ = mainHero.unitZ + dirZ * SWORD_LENGTH;
-		float swordY = mainHero.unitY + SWORD_HEIGHT; // Та же высота!
+		float swordY = mainHero.unitY + SWORD_HEIGHT;
 
 		// Размер меча меняется во время атаки
 		float swordSize = 0.3f;
 		if (progress < 0.5f) {
-			swordSize = 0.1f + progress * 0.4f; // Растет
+			swordSize = 0.1f + progress * 0.4f;
 		}
 		else {
-			swordSize = 0.3f - (progress - 0.5f) * 0.4f; // Уменьшается
+			swordSize = 0.3f - (progress - 0.5f) * 0.4f;
 		}
 
 		// Сохраняем для отрисовки
@@ -1040,15 +1040,17 @@ void ProcessSwordAttack() {
 		}
 
 		// Проверка попадания (в середине атаки)
+		static bool hasHitThisAttack = false; // Переменная для текущей атаки
+
 		if (progress > 0.3f && progress < 0.7f) {
-			static bool hasHit = false;
-			if (!hasHit) {
+			if (!hasHitThisAttack) {
 				for (auto& enemy : enemys) {
 					float dx = enemy.unitX - swordX;
 					float dz = enemy.unitZ - swordZ;
-					float distance = sqrt(dx * dx + dz * dz);
+					float distanceSq = dx * dx + dz * dz;
+					float combinedRadius = enemy.unitSize / 2 + swordSize / 2;
 
-					if (distance < (enemy.unitSize + swordSize)) {
+					if (distanceSq < combinedRadius * combinedRadius) {
 						// Наносим урон
 						enemy.health -= mainHero.attackDamage;
 
@@ -1064,10 +1066,10 @@ void ProcessSwordAttack() {
 						enemy.unitX += dirX * 2.0f;
 						enemy.unitZ += dirZ * 2.0f;
 
-						hasHit = true;
+						hasHitThisAttack = true;
+						break; // Прекращаем проверку после первого попадания
 					}
 				}
-				hasHit = true;
 			}
 		}
 
@@ -1076,6 +1078,7 @@ void ProcessSwordAttack() {
 			mainHero.isAttacking = false;
 			mainHero.attackAnimation = 0.0f;
 			swordEffects.clear();
+			hasHitThisAttack = false; // СБРАСЫВАЕМ для следующей атаки!
 		}
 	}
 
