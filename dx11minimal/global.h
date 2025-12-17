@@ -72,7 +72,10 @@ struct Hero : public Unit {
 	float attackAnimation = 0.0f;
 	float attackAngle = 0.0f;
 	float sweepAngle = 60.0f;
-
+    bool isJumping = false;
+    float jumpProgress = 0.0f;
+    const float JUMP_DURATION = 0.5f;  
+    const float JUMP_HEIGHT = 1.5f;    
 	// Конструктор для Hero
 	Hero(float x, float y, float z, float size, float speed, float hp, float jump)
 		: Unit(x, y, z, size, speed, hp, jump) {

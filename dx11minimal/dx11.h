@@ -1250,22 +1250,29 @@ void UpdatePositions() {
 	}
 
 	if (GetAsyncKeyState(VK_SPACE) & 0x8000) {  // JUMP
-		/*velocity_y = jump_force  # начальная скорость
-			# Затем в каждом кадре :
-		position_y += velocity_y * delta_time
-			velocity_y -= gravity * delta_time  # гравитация снижает скорость
 
-			# Проверка земли
-			if position_y <= 0:
-		position_y = 0
-			velocity_y = 0
-			is_grounded = True*/
-		if ((mainHero.unitY - mainHero.unitSize) == 0.0f) {
-			
-			mainHero.unitY += mainHero.jumpStrange;
-			
+		if (!mainHero.isJumping && (mainHero.unitY - mainHero.unitSize) <= 0.0f) {
+			mainHero.isJumping = true;
+			mainHero.jumpProgress = 0.0f;
 		}
 		
+	}
+	if (mainHero.isJumping) {
+		mainHero.jumpProgress += FRAME_LEN/1000.0F;
+
+		// Параболическая траектория для более естественного прыжка
+		float t = mainHero.jumpProgress / mainHero.JUMP_DURATION;
+
+		if (t <= 1.0f) {
+			// Используем синусоиду для плавного прыжка
+			float height = mainHero.JUMP_HEIGHT * sinf(t * 3.14159f);
+			mainHero.unitY = (0.0f + mainHero.unitSize) + height;
+		}
+		else {
+			// Завершаем прыжок
+			mainHero.unitY = 0.0f + mainHero.unitSize;
+			mainHero.isJumping = false;
+		}
 	}
 }
 void ShowHealth() {
