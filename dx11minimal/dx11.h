@@ -477,6 +477,9 @@ namespace Shaders {
 		CreatePS(4, nameToPatchLPCWSTR("swordPS.h"));
 		CreateVS(5, nameToPatchLPCWSTR("unitVS.h")); // Для эффектов
 		CreatePS(5, nameToPatchLPCWSTR("effectPS.h"));
+
+		CreateVS(6, nameToPatchLPCWSTR("indicatorVS.h")); // Для индикатора атаки
+		CreatePS(6, nameToPatchLPCWSTR("indicatorPS.h"));
 	}
 
 	void vShader(unsigned int n)
@@ -1176,8 +1179,8 @@ void drawAttackIndicator() {
 
 		ConstBuf::Update(5, ConstBuf::global);
 		ConstBuf::ConstToVertex(5);
-		Shaders::vShader(5);  // Используем шейдер врагов (красный)
-		Shaders::pShader(5);
+		Shaders::vShader(6);  // Используем шейдер врагов (красный)
+		Shaders::pShader(6);
 		Draw::NullDrawer(6, 1);
 	}
 }
