@@ -52,8 +52,8 @@ VS_OUTPUT VS(uint vID : SV_VertexID)
     float y4 = 0.79;
     float y5 = 0.8;
 
-    float x7 = -0.981;      // ‘иксированна€ X-координата нижнего левого угла
-    float x6 = -0.987;
+    float x7 = -0.98;      // ‘иксированна€ X-координата нижнего левого угла
+    float x6 = -0.988;
     float y6 = 0.79;
     float y7 = 0.91;
     
