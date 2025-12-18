@@ -66,8 +66,8 @@ VS_OUTPUT VS(uint vID : SV_VertexID)
     // ѕараметры куба из gConst[0]
     float centerX = gConst[0].x;      // X координата центра куба
     float centerZ = gConst[0].y;      // Z координата центра куба
-    float centerY = 0.7f;      // Y координата центра (высота)
-    float size = gConst[0].z;         // –азмер куба (масштаб)
+    float centerY = gConst[0].z;      // Y координата центра (высота)
+    float size = 0.15;         // –азмер куба (масштаб)
     float angel = gConst[0].w*-1;
 
     float3 worldCenter = float3(centerX, centerY, centerZ);
@@ -75,28 +75,28 @@ VS_OUTPUT VS(uint vID : SV_VertexID)
     // ¬ершины куба (36 вершин)
     float3 baseVerts[36] = {
         // передн€€ сторона (Z = 0)
-        float3(0, 0, 0), float3(0.5, 0, 0), float3(0, 0.5, 0),
-        float3(0.5, 0, 0), float3(0.5, 0.5, 0), float3(0, 0.5, 0),
+        float3(0, 0, -1.25), float3(0.5, 0, -1.25), float3(0, 0.5, -1.25),
+        float3(0.5, 0, -1.25), float3(0.5, 0.5, -1.25), float3(0, 0.5, -1.25),
 
         // задн€€ сторона (Z = 1)
-        float3(0, 0, 1), float3(0.5, 0, 1), float3(0, 0.5, 1),
-        float3(0.5, 0, 1), float3(0.5, 0.5, 1), float3(0, 0.5, 1),
+        float3(0, 0, 1.25), float3(0.5, 0, 1.25), float3(0, 0.5, 1.25),
+        float3(0.5, 0, 1.25), float3(0.5, 0.5, 1.25), float3(0, 0.5, 1.25),
 
         // нижн€€ сторона (Y = 0)
-        float3(0, 0, 0), float3(0.5, 0, 0), float3(0, 0, 1),
-        float3(0.5, 0, 0), float3(0.5, 0, 1), float3(0, 0, 1),
+        float3(0, 0, -1.25), float3(0.5, 0, -1.25), float3(0, 0, 1.25),
+        float3(0.5, 0, -1.25), float3(0.5, 0, 1.25), float3(0, 0, 1.25),
 
         // верхн€€ сторона (Y = 1)
-        float3(0, 0.5, 0), float3(0.5, 0.5, 0), float3(0, 0.5, 1),
-        float3(0.5, 0.5, 0), float3(0.5, 0.5, 1), float3(0, 0.5, 1),
+        float3(0, 0.5, -1.25), float3(0.5, 0.5, -1.25), float3(0, 0.5, 1.25),
+        float3(0.5, 0.5, -1.25), float3(0.5, 0.5, 1.25), float3(0, 0.5, 1.25),
 
         // лева€ сторона (X = 0)
-        float3(0, 0, 0), float3(0, 0, 1), float3(0, 0.5, 0),
-        float3(0, 0, 1), float3(0, 0.5, 1), float3(0, 0.5, 0),
+        float3(0, 0, -1.25), float3(0, 0, 1.25), float3(0, 0.5, -1.25),
+        float3(0, 0, 1.25), float3(0, 0.5, 1.25), float3(0, 0.5, -1.25),
 
         // права€ сторона (X = 1)
-        float3(0.5, 0, 0), float3(0.5, 0, 1), float3(0.5, 0.5, 0),
-        float3(0.5, 0, 1), float3(0.5, 0.5, 1), float3(0.5, 0.5, 0)
+        float3(0.5, 0, -1.25), float3(0.5, 0, 1.25), float3(0.5, 0.5, -1.25),
+        float3(0.5, 0, 1.25), float3(0.5, 0.5, 1.25), float3(0.5, 0.5, -1.25)
     };
 
     // ѕ–ј¬»Ћ№Ќќ: используем vID дл€ доступа ко всем 36 вершинам

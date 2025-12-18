@@ -60,6 +60,9 @@
     <ClInclude Include="indicatorPS.h">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="indicatorVS.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dx11minimal.cpp">

@@ -1166,14 +1166,14 @@ void drawAttackIndicator() {
 		// Позиция индикатора - фиксированное расстояние от героя
 		float indicatorX = mainHero.unitX + dirX * SWORD_LENGTH;
 		float indicatorZ = mainHero.unitZ + dirZ * SWORD_LENGTH;
-		 // Фиксированная высота!
+		float indicatorY = mainHero.unitY;// Фиксированная высота!
 
 		ZeroMemory(ConstBuf::global, sizeof(ConstBuf::global));
 		// Порядок: X, Z, Y, Size
 		ConstBuf::global[0] = XMFLOAT4{
 			indicatorX,      // X
 			indicatorZ,      // Z       // 
-			0.15f,   // Маленький размер
+			indicatorY,   // Маленький размер
 			mainHero.attackAngle
 		};
 
