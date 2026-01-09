@@ -12,7 +12,12 @@
 #include <debugapi.h>
 #include "global.h"
 #include <cmath>
+#include <assimp/Importer.hpp>
 
+void AssimpLinkTest()
+{
+	Assimp::Importer importer;
+}
 using namespace DirectX;
 
 #define FRAMES_PER_SECOND 60
